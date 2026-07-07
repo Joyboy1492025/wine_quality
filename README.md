@@ -17,6 +17,7 @@ in a Jupyter notebook and served through a Flask web app.
 ├── model.pkl               # Trained LinearRegression model  (you generate this)
 ├── scaler.pkl               # Fitted StandardScaler used at training time (you generate this)
 └── red_wine_quality.csv     # Source dataset (not included — see Dataset section)
+└──    requirements.txt      # All librarys info
 ```
 
 `model.pkl` and `scaler.pkl` are **not shipped** — you generate them yourself by
