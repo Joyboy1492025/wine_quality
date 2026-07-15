@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% set active_page = 'compare' %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="bi bi-bar-chart-steps text-info me-2"></i>Architecture Leaderboard & Comparison</h2>
+        <p class="text-muted">A comparative metrics layout built dynamically from evaluation checkpoints across standard regression indices.</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-xl-8 col-lg-7">
+        <div class="card p-4 bg-white h-100">
+            <h5 class="card-title mb-4"><i class="bi bi-graph-up-arrow text-success me-2"></i>Comparative Breakdown Matrix</h5>
+            <div class="table-responsive">
+                <table class="table table-striped align-middle text-center">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="text-start">Framework Identity</th>
+                            <th>MAE</th>
+                            <th>MSE</th>
+                            <th>RMSE</th>
+                            <th>R² Index</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in metrics %}
+                        <tr>
+                            <td class="text-start fw-bold">{{ row.Model }}</td>
+                            <td><code class="text-dark">{{ row.MAE|round(5) }}</code></td>
+                            <td><code class="text-dark">{{ row.MSE|round(5) }}</code></td>
+                            <td><code class="text-secondary">{{ (row.MSE ** 0.5)|round(5) }}</code></td>
+                            <td>
+                                <span class="badge {% if row.R2 > 0.5 %}bg-success{% elif row.R2 > 0.2 %}bg-warning{% else %}bg-danger{% endif %} px-2 py-1">
+                                    {{ row.R2|round(4) }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">Comparative evaluation data missing. Check standard workspace path logs.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-4 col-lg-5">
+        <div class="card p-4 bg-white h-100">
+            <h5 class="card-title mb-3"><i class="bi bi-info-circle text-primary me-2"></i>Index Diagnostic Glossary</h5>
+            <div class="list-group list-group-flush small">
+                <div class="list-group-item py-3">
+                    <h6 class="mb-1 text-primary fw-bold">MAE (Mean Absolute Error)</h6>
+                    <p class="text-muted mb-0">Represents the average structural distance between actual validation metrics and computed evaluations. Lower magnitudes emphasize elevated modeling stability.</p>
+                </div>
+                <div class="list-group-item py-3">
+                    <h6 class="mb-1 text-primary fw-bold">MSE / RMSE</h6>
+                    <p class="text-muted mb-0">Mean Squared Error heavily penalizes outliers. Root Mean Squared Error matches variance transformations to the foundational targets.</p>
+                </div>
+                <div class="list-group-item py-3">
+                    <h6 class="mb-1 text-primary fw-bold">R² Coefficient of Determination</h6>
+                    <p class="text-muted mb-0">Defines predictable structural variance ratios mapped inside target features. High scores reflect pristine performance fitting metrics.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

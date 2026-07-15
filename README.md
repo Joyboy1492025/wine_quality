@@ -1,103 +1,265 @@
-# Wine Quality Predictor
+# Red Wine Quality Prediction System
 
-A small end-to-end project that predicts red wine quality (score 0–10) from its
-physicochemical properties, using a Multiple Linear Regression model trained
-in a Jupyter notebook and served through a Flask web app.
+A comprehensive machine learning project for predicting red wine quality from physicochemical properties. Features multiple regression models, model comparison, and an interactive web dashboard built with Flask.
 
 ---
 
-## Project structure
+## 📋 Project Overview
+
+This project demonstrates the complete ML pipeline:
+- **Data Cleaning & EDA** in Jupyter notebook
+- **Model Training** using 10+ regression algorithms
+- **Model Comparison** with metrics tracking
+- **Interactive Dashboard** for predictions and model analytics
+
+Predicts wine quality scores (0–10) based on 11 physicochemical features like acidity, alcohol content, sulfur dioxide levels, and more.
+
+---
+
+## 📁 Project Structure
 
 ```
-.
-├── Main_app.ipynb        # Data cleaning, EDA, and model training (annotated)
-├── app.py                 # Flask backend that loads the model + scaler and serves predictions
-├── templates/
-│   └── index.html          # Web form (Jinja2 template rendered by Flask)
-├── model.pkl               # Trained LinearRegression model  (you generate this)
-├── scaler.pkl               # Fitted StandardScaler used at training time (you generate this)
-└── red_wine_quality.csv     # Source dataset (not included — see Dataset section)
-└──    requirements.txt      # All librarys info
+Red Wine/
+├── Main_app.ipynb                 # Data cleaning, EDA, and model training
+├── app.py                          # Flask web application
+├── model.py                        # Model training & evaluation script
+├── requirements.txt                # Python dependencies
+├── red_wine_quality.csv            # Raw dataset from UCI
+├── clean_dataset.csv               # Processed dataset
+├── README.md                       # This file
+├── models/                         # Trained model artifacts
+│   ├── *.pkl                       # Pickled trained models
+│   └── model_evaluation_results.csv # Performance metrics comparison
+└── templates/                      # Flask HTML templates
+    ├── base.html                   # Base template
+    ├── dashboard.html              # Model comparison & stats
+    ├── predict.html                # Prediction form
+    └── compare.html                # Model performance comparison
 ```
 
-`model.pkl` and `scaler.pkl` are **not shipped** — you generate them yourself by
-running the notebook end-to-end (see below). `red_wine_quality.csv` is likewise
-not included; place it next to the notebook before running.
+---
+
+## 🎯 Models Included
+
+The project trains and compares 10+ regression models:
+
+- **LinearRegression** — Baseline linear model
+- **Ridge & Lasso** — Regularized linear regression
+- **ElasticNet** — Combined L1/L2 regularization
+- **Polynomial Regression** — Degree 2 polynomial features
+- **Robust Regression (HuberRegressor)** — Resistant to outliers
+- **SGDRegressor** — Stochastic gradient descent
+- **Artificial Neural Network (MLP)** — Deep learning approach
+- **Random Forest** — Ensemble method
+- **Support Vector Regression (SVR)** — Kernel-based method
+- **XGBoost** — Gradient boosting
+- **LightGBM** — Fast gradient boosting
 
 ---
 
-## How it works
+## 🚀 Getting Started
 
-1. **`Main_app.ipynb`** loads the raw wine dataset, cleans it (strips units like
-   `g/L`, `mg/L`, `% vol` from the raw text columns via regex), explores it
-   (correlation plots, box plots, a pairplot), then:
-   - splits it into train/test sets,
-   - fits a `StandardScaler` on the training features,
-   - trains a `LinearRegression` model on the **scaled** training features,
-   - evaluates it on the test set (MSE, R², a residual plot).
+### Prerequisites
+- Python 3.8+
+- pip
 
-   Every code cell has a markdown explanation directly beneath it describing
-   what it does, and a few cells call out things worth double-checking (e.g. a
-   dtype comparison in the cleaning step, and the fact that the scaler needs
-   to be saved for deployment — see below).
+### Installation
 
-2. **`app.py`** loads the trained `model.pkl` **and** the fitted `scaler.pkl`,
-   validates form input against sensible physicochemical ranges, scales the
-   input exactly the way the training data was scaled, and returns a predicted
-   quality score.
+1. **Clone and navigate to the project:**
+   ```bash
+   cd "Red Wine"
+   ```
 
-3. **`templates/index.html`** is the form the user fills in — one field per
-   physicochemical property, each with a min/max range enforced both in the
-   browser (HTML `min`/`max`) and again on the server (defense in depth).
+2. **Create a virtual environment (recommended):**
+   ```bash
+   python -m venv venv
+   # Windows:
+   venv\Scripts\activate
+   # macOS/Linux:
+   source venv/bin/activate
+   ```
+
+3. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 ---
 
-## Setup
+## 📊 Workflow
+
+### Step 1: Data Preparation & Model Training
+
+Run the training script to clean data and train all models:
 
 ```bash
-# 1. Create a virtual environment (recommended)
-python3 -m venv venv
-source venv/bin/activate        # on Windows: venv\Scripts\activate
-
-# 2. Install dependencies
-pip install flask numpy pandas scikit-learn matplotlib seaborn jupyter
+python model.py
 ```
 
-### Step 1 — Get the dataset
+This will:
+- Load `red_wine_quality.csv`
+- Clean and preprocess the data
+- Split into train/test sets
+- Train all 10+ models
+- Save trained models to `models/` directory
+- Generate `model_evaluation_results.csv` with performance metrics
+- Create `clean_dataset.csv` for the web app
 
-Place `red_wine_quality.csv` in the same folder as `Main_app.ipynb`
-(this is the classic UCI "Wine Quality" red wine dataset — 11 physicochemical
-features + a `quality` score).
+**Output:**
+- `clean_dataset.csv` — Cleaned and processed dataset
+- `models/*.pkl` — Trained model files
+- `models/model_evaluation_results.csv` — Comparison metrics (R², MAE, MSE)
 
-### Step 2 — Run the notebook and save the model + scaler
+### Step 2: Explore Data in Notebook (Optional)
 
-Open and run `Main_app.ipynb` top to bottom. It does **not** currently save
-`model.pkl` / `scaler.pkl` on its own — add this as a final cell (or run it
-manually right after cell 26/28) and execute it:
+Open `Main_app.ipynb` in Jupyter for detailed exploratory data analysis:
 
-```python
-import pickle
-pickle.dump(model, open('model.pkl', 'wb'))
-pickle.dump(scaler, open('scaler.pkl', 'wb'))
+```bash
+jupyter notebook Main_app.ipynb
 ```
 
-This is the single most important step — the model was trained on
-**standardized** features (via `StandardScaler`), not raw units, so `app.py`
-needs that exact fitted scaler to transform new inputs the same way before
-prediction. Without `scaler.pkl`, the app will refuse to serve predictions
-and will tell you why.
+The notebook includes:
+- Data cleaning and preprocessing
+- Correlation analysis and visualizations
+- Feature distributions and relationships
+- Model training walkthrough
+- Evaluation metrics and plots
 
-Move both `model.pkl` and `scaler.pkl` into the same folder as `app.py`.
+### Step 3: Launch the Web Application
 
-### Step 3 — Run the app
+Run the Flask app:
 
 ```bash
 python app.py
 ```
 
-Then open **http://127.0.0.1:5000** in your browser.
+Open your browser to **http://127.0.0.1:5000**
 
-By default the app runs with Flask's debugger **off** (safe default). To turn
+---
+
+## 🎨 Web Application Features
+
+### Dashboard (`/`)
+- View total number of trained models
+- Compare model performance metrics (R², MAE, MSE)
+- Sort models by best performance
+
+### Prediction (`/predict`)
+- Interactive form for all 11 wine features
+- Input validation with min/max ranges
+- Real-time quality predictions
+- Supports predictions from any trained model
+
+### Model Comparison (`/compare`)
+- Side-by-side model performance metrics
+- Visual comparison of accuracy scores
+- Identify best-performing model
+
+---
+
+## 📈 Data Features
+
+The model uses 11 physicochemical properties to predict wine quality:
+
+1. **Fixed Acidity** — Mostly non-volatile acids
+2. **Volatile Acidity** — Amount of acetic acid
+3. **Citric Acid** — Adds freshness and flavor
+4. **Residual Sugar** — Remaining after fermentation
+5. **Chlorides** — Salt content
+6. **Free Sulfur Dioxide** — Prevents spoilage
+7. **Total Sulfur Dioxide** — Total SO₂ content
+8. **Density** — Physical density (g/mL)
+9. **pH** — Acidity/basicity level
+10. **Sulphates** — Wine additive for preservation
+11. **Alcohol** — Alcohol content by volume (%)
+
+**Target:** Quality score (0–10)
+
+---
+
+## 📊 Model Evaluation
+
+Models are evaluated on:
+- **R² Score** — Proportion of variance explained
+- **Mean Absolute Error (MAE)** — Average prediction error
+- **Mean Squared Error (MSE)** — Squared prediction error
+
+Results are saved to `models/model_evaluation_results.csv` and displayed in the dashboard.
+
+---
+
+## 🔧 Configuration
+
+Edit `model.py` to:
+- Adjust train/test split ratio
+- Change random seed for reproducibility
+- Modify hyperparameters for each model
+- Add or remove models from training
+
+Edit `app.py` to:
+- Change Flask port (default: 5000)
+- Modify input validation ranges
+- Add new prediction routes
+
+---
+
+## 📚 Dataset
+
+The UCI Wine Quality dataset contains 1,599 red wine samples with physicochemical tests and quality ratings. Download from:
+https://archive.ics.uci.edu/ml/datasets/Wine+Quality
+
+- File: `red_wine_quality.csv`
+- Size: ~100 KB
+- Samples: 1,599
+- Features: 11 physicochemical properties
+- Target: Quality (0–10)
+
+---
+
+## 📝 Files Reference
+
+| File | Purpose |
+|------|---------|
+| `model.py` | Train all models and save artifacts |
+| `app.py` | Flask web application and API |
+| `Main_app.ipynb` | Exploratory data analysis & training notebook |
+| `clean_dataset.csv` | Preprocessed dataset (generated) |
+| `models/*.pkl` | Trained model files (generated) |
+| `models/model_evaluation_results.csv` | Performance comparison (generated) |
+
+---
+
+## 🐛 Troubleshooting
+
+**Models not found:**
+- Ensure `model.py` has been run to generate model files
+- Check that `models/` directory exists with `.pkl` files
+
+**Dataset not found:**
+- Place `red_wine_quality.csv` in the project root
+- Run `python model.py` to process the raw dataset
+
+**Feature mismatch errors:**
+- Clear the `models/` directory
+- Re-run `python model.py` to retrain with current features
+
+**Port already in use:**
+- Edit the port in `app.py`: `app.run(port=5001)`
+- Or stop the process using port 5000
+
+---
+
+## 📄 License
+
+This is a practice project using the UCI Wine Quality dataset.
+
+---
+
+## 🙏 Acknowledgments
+
+- UCI Machine Learning Repository for the Wine Quality dataset
+- Flask for the web framework
+- Scikit-learn, XGBoost, and LightGBM for ML algorithms
 it on for local development:
 
 ```bash

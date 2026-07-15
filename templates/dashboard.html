@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% set active_page = 'dashboard' %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 text-center text-md-start">
+        <h1 class="h2 text-gray-800">Operational Machine Learning Dashboard</h1>
+        <p class="text-muted">Overview of metrics and deployed operational framework targets.</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card p-4 bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-uppercase mb-1 tracking-wider opacity-75">Trained Frameworks</h6>
+                    <h2 class="mb-0 fw-bold">{{ total_models }} Models</h2>
+                </div>
+                <i class="bi bi-box-seam fs-1 opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-4 bg-success text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-uppercase mb-1 tracking-wider opacity-75">Top Framework Performance</h6>
+                    <h2 class="mb-0 fw-bold">{% if metrics %}{{ (metrics[0].R2 * 100)|round(2) }}% R²{% else %}N/A{% endif %}</h2>
+                </div>
+                <i class="bi bi-trophy fs-1 opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-4 bg-info text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-uppercase mb-1 tracking-wider opacity-75">Best Performing Variant</h6>
+                    <h2 class="mb-0 fw-bold text-truncate" style="max-width: 220px;">{% if metrics %}{{ metrics[0].Model }}{% else %}N/A{% endif %}</h2>
+                </div>
+                <i class="bi bi-check-circle fs-1 opacity-50"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card p-4 bg-white">
+            <h5 class="card-title mb-3"><i class="bi bi-list-stars text-warning me-2"></i>Quick Performance Standing</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Rank</th>
+                            <th>Model Signature</th>
+                            <th>MAE (Absolute Error)</th>
+                            <th>MSE (Squared Error)</th>
+                            <th>R² Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in metrics %}
+                        <tr {% if loop.first %}class="table-success fw-bold"{% endif %}>
+                            <td>#{{ loop.index }}</td>
+                            <td><span class="badge bg-dark px-3 py-2 fs-7">{{ row.Model }}</span></td>
+                            <td>{{ row.MAE|round(4) }}</td>
+                            <td>{{ row.MSE|round(4) }}</td>
+                            <td>{{ row.R2|round(4) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">No benchmark matrices found. Please ensure training script executed successfully.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

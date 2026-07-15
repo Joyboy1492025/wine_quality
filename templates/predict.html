@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% set active_page = 'predict' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card p-4 bg-white mb-4">
+            <h3 class="text-center text-primary mb-2"><i class="bi bi-lightning-charge-fill me-2 text-warning"></i>Predict Model Output Quality</h3>
+            <p class="text-muted text-center">Execute atomic single-record inferences against any serialized workspace element</p>
+            <hr>
+            
+            <form id="inferenceForm">
+                <div class="mb-4">
+                    <label for="model_name" class="form-label fw-bold"><i class="bi bi-cpu me-1"></i>Select Active Architecture Pipeline</label>
+                    <select class="form-select form-select-lg" id="model_name" name="model_name" required>
+                        <option value="" selected disabled>Choose Deployed Checkpoint...</option>
+                        {% for model in models %}
+                            <option value="{{ model }}">{{ model }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <h5 class="mb-3 text-secondary border-bottom pb-2"><i class="bi bi-sliders me-1"></i>Input Feature Configuration Vectors</h5>
+                <div class="row g-3">
+                    {% for feature in features %}
+                    <div class="col-md-4 col-sm-6">
+                        <label for="{{ feature.name }}" class="form-label small fw-semibold text-muted text-capitalize">
+                            {{ feature.name.replace('_', ' ') }} 
+                            <span class="text-secondary opacity-75">({{ feature.min }}-{{ feature.max }})</span>
+                        </label>
+                        <input type="number" 
+                               step="any" 
+                               min="{{ feature.min }}" 
+                               max="{{ feature.max }}" 
+                               value="{{ feature.default }}"
+                               class="form-control form-control-sm" 
+                               id="{{ feature.name }}" 
+                               name="{{ feature.name }}" 
+                               required>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-play-circle me-1"></i>Compute Quality Vector</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="resultBox" class="card p-4 d-none border border-success bg-white text-center animate-fade-in">
+            <h5 class="text-muted mb-1">Evaluated Inference Score</h5>
+            <div class="display-3 my-2 text-success fw-bold" id="predictedTarget">-</div>
+            <p class="text-muted mb-0">Engineered Pipeline Signature: <span id="pipelineSignature" class="badge bg-dark"></span></p>
+        </div>
+        
+        <div id="errorBox" class="card p-4 d-none alert alert-danger border-danger text-center">
+            <h5 class="alert-heading fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>Execution Fault</h5>
+            <p id="errorTrace" class="mb-0"></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('inferenceForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Native HTML5 validations check (triggers min/max bounds check automatically)
+        if (!this.checkValidity()) {
+            this.reportValidity();
+            return;
+        }
+
+        const formData = new FormData(this);
+        const rBox = document.getElementById('resultBox');
+        const eBox = document.getElementById('errorBox');
+        
+        rBox.classList.add('d-none');
+        eBox.classList.add('d-none');
+        
+        try {
+            const resp = await fetch('/predict', { method: 'POST', body: formData });
+            const data = await resp.json();
+            
+            if (data.success) {
+                document.getElementById('predictedTarget').innerText = data.prediction;
+                document.getElementById('pipelineSignature').innerText = data.model_used;
+                rBox.classList.remove('d-none');
+                window.scrollTo({ top: rBox.offsetTop - 100, behavior: 'smooth' });
+            } else {
+                document.getElementById('errorTrace').innerText = data.error || 'Pipeline structural processing error.';
+                eBox.classList.remove('d-none');
+            }
+        } catch(err) {
+            document.getElementById('errorTrace').innerText = 'System Connection failure during request.';
+            eBox.classList.remove('d-none');
+        }
+    });
+</script>
+{% endblock %}
